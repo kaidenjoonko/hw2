@@ -9,8 +9,10 @@
 #include "db_parser.h"
 #include "product_parser.h"
 #include "util.h"
+#include "mydatastore.h"
 
 using namespace std;
+
 struct ProdNameSorter {
     bool operator()(Product* p1, Product* p2) {
         return (p1->getName() < p2->getName());
@@ -29,7 +31,7 @@ int main(int argc, char* argv[])
      * Declare your derived DataStore object here replacing
      *  DataStore type to your derived type
      ****************/
-    DataStore ds;
+    MyDataStore ds;
 
 
 
@@ -100,15 +102,45 @@ int main(int argc, char* argv[])
                 done = true;
             }
 	    /* Add support for other commands here */
+            else if(cmd == "ADD"){
+              string username;
+              size_t index;
 
-
-
-
+              if(ss >> username >> index){
+                if(index > 0 && index <= hits.size()){
+                  ds.addToCart(username, hits[index-1]);
+                }
+                else{
+                  cout << "Invalid request" << endl;
+                }
+              }
+              else{
+                cout << "Invalid request" << endl;
+              }
+            }
+             else if( cmd == "VIEWCART" ) {
+             string username;
+             // input is valid
+             if( ss >> username ) {
+                 ds.viewCart(convToLower(username));
+             }
+             else {
+                 cout << "Invalid username" << endl;
+             }
+           }
+           else if( cmd == "BUYCART" ) {
+             string username;
+             // input is valid
+             if( ss >> username) {
+                 ds.buyCart(convToLower(username));
+             } else {
+                 cout << "Invalid username" << endl;
+             }
+           }
             else {
                 cout << "Unknown command" << endl;
             }
         }
-
     }
     return 0;
 }
@@ -116,7 +148,7 @@ int main(int argc, char* argv[])
 void displayProducts(vector<Product*>& hits)
 {
     int resultNo = 1;
-    if (hits.begin() == hits.end()) {
+    if (hits.empty()) {
     	cout << "No results found!" << endl;
     	return;
     }
